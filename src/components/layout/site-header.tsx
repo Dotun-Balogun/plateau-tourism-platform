@@ -24,10 +24,11 @@ export async function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4">
+        <Link href="/" className="flex shrink-0 items-center gap-2 font-semibold">
           <Compass className="size-5" />
-          <span>Discover Plateau State</span>
+          <span className="hidden sm:inline">Discover Plateau State</span>
+          <span className="sm:hidden">Plateau State</span>
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
@@ -51,7 +52,13 @@ export async function SiteHeader() {
           )}
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
+        {/*
+          Fixed: this used to be `hidden md:flex`, so the avatar/sign-out
+          menu (for logged-in users) and the sign-in/sign-up buttons simply
+          didn't render at all on mobile. Now always visible — this is the
+          primary account control on every screen size.
+        */}
+        <div className="flex shrink-0 items-center gap-2">
           {user ? (
             <UserMenu
               fullName={profile?.full_name ?? null}
@@ -61,50 +68,45 @@ export async function SiteHeader() {
             />
           ) : (
             <>
-              <Button variant="ghost" size="sm" asChild>
+              <Button variant="ghost" size="sm" className="hidden sm:inline-flex" asChild>
                 <Link href="/auth/login">Sign in</Link>
               </Button>
-              <Button size="sm" asChild>
+              <Button size="sm" className="sm:hidden" asChild>
+                <Link href="/auth/login">Sign in</Link>
+              </Button>
+              <Button size="sm" className="hidden sm:inline-flex" asChild>
                 <Link href="/auth/sign-up">Get started</Link>
               </Button>
             </>
           )}
-        </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="size-5" />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            {NAV_LINKS.map((link) => (
-              <DropdownMenuItem key={link.href} asChild>
-                <Link href={link.href}>{link.label}</Link>
-              </DropdownMenuItem>
-            ))}
-            {isStaff && (
-              <DropdownMenuItem asChild>
-                <Link href="/admin">Admin dashboard</Link>
-              </DropdownMenuItem>
-            )}
-            {user ? (
-              <DropdownMenuItem asChild>
-                <Link href="/itineraries">My itineraries</Link>
-              </DropdownMenuItem>
-            ) : (
-              <>
-                <DropdownMenuItem asChild>
-                  <Link href="/auth/login">Sign in</Link>
+          {/* Nav links live behind the hamburger below md; account controls above don't. */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden">
+                <Menu className="size-5" />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              {NAV_LINKS.map((link) => (
+                <DropdownMenuItem key={link.href} asChild>
+                  <Link href={link.href}>{link.label}</Link>
                 </DropdownMenuItem>
+              ))}
+              {isStaff && (
+                <DropdownMenuItem asChild>
+                  <Link href="/admin">Admin dashboard</Link>
+                </DropdownMenuItem>
+              )}
+              {!user && (
                 <DropdownMenuItem asChild>
                   <Link href="/auth/sign-up">Get started</Link>
                 </DropdownMenuItem>
-              </>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </header>
   );
