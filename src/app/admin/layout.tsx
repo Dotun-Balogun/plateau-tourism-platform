@@ -10,6 +10,7 @@ import {
   MapPin,
 } from "lucide-react";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getCurrentUserWithProfile, isStaffRole } from "@/lib/supabase/current-user";
 import { signOut } from "@/app/(public)/auth/actions";
 
@@ -34,6 +35,16 @@ export default async function AdminLayout({
     redirect("/");
   }
 
+  const displayName = profile?.full_name || user.email || "Admin";
+  const initials =
+    displayName
+      .trim()
+      .split(/\s+/)
+      .map((p) => p[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() || "?";
+
   return (
     <div className="flex min-h-full bg-muted/30">
       <aside className="hidden w-60 shrink-0 flex-col border-r bg-background md:flex">
@@ -56,6 +67,17 @@ export default async function AdminLayout({
         </nav>
 
         <div className="space-y-1 border-t p-3">
+          <div className="flex items-center gap-2 px-3 py-2">
+            <Avatar className="size-7">
+              {profile?.avatar_url && (
+                <AvatarImage src={profile.avatar_url} alt={displayName} />
+              )}
+              <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+            </Avatar>
+            <span className="truncate text-sm text-muted-foreground">
+              {displayName}
+            </span>
+          </div>
           <Link
             href="/"
             className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
@@ -76,14 +98,42 @@ export default async function AdminLayout({
       </aside>
 
       <div className="flex flex-1 flex-col">
-        <header className="flex h-16 items-center justify-between border-b bg-background px-6 md:hidden">
-          <div className="flex items-center gap-2 font-semibold">
-            <Compass className="size-5 text-primary" />
-            <span>Admin</span>
+        {/*
+          Fixed: this bar previously only had a logo and "View site" link —
+          no avatar, no sign-out — because those lived exclusively in the
+          desktop sidebar above, which is hidden below md. Mobile admins had
+          no way to sign out at all. Now both are here.
+        */}
+        <header className="flex h-16 items-center justify-between gap-3 border-b bg-background px-4 md:hidden">
+          <div className="flex min-w-0 items-center gap-2 font-semibold">
+            <Compass className="size-5 shrink-0 text-primary" />
+            <span className="truncate">Admin</span>
           </div>
-          <Link href="/" className="text-sm text-muted-foreground">
-            View site
-          </Link>
+
+          <div className="flex shrink-0 items-center gap-1">
+            <Avatar className="size-7">
+              {profile?.avatar_url && (
+                <AvatarImage src={profile.avatar_url} alt={displayName} />
+              )}
+              <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+            </Avatar>
+            <Link
+              href="/"
+              className="rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              title="View site"
+            >
+              <ExternalLink className="size-4" />
+            </Link>
+            <form action={signOut}>
+              <button
+                type="submit"
+                className="rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                title="Sign out"
+              >
+                <LogOut className="size-4" />
+              </button>
+            </form>
+          </div>
         </header>
 
         <nav className="flex gap-1 overflow-x-auto border-b bg-background px-3 py-2 md:hidden">
